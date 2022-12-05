@@ -1,5 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter_2048/service/provider/game_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../const/colors.dart';
@@ -18,7 +19,9 @@ class TileBoardWidget extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final board = ref.watch(boardManager);
-
+    // ref.listen(todosProvider, (previous, TodosNotifier next) {
+    //   print(next.generateList);
+    // });
     //Decides the maximum size the Board can be based on the shortest size of the screen.
     final size = max(
         290.0,
@@ -81,7 +84,7 @@ class TileBoardWidget extends ConsumerWidget {
                     onPressed: () {
                       ref.read(boardManager.notifier).newGame();
                     },
-                  )
+                  ),
                 ],
               ),
             ))

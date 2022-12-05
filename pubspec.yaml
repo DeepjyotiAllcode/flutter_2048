@@ -47,6 +47,7 @@ dependencies:
   #key-value database which we will use to save game state
   hive: ^2.1.1
   hive_flutter: ^1.1.0
+  # provider: ^6.0.4
 
   # Used together with json_serializable to generate fromJson/toJson functions
   json_annotation: ^4.5.0

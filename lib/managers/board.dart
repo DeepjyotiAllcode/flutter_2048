@@ -35,9 +35,14 @@ class BoardManager extends StateNotifier<Board> {
 
   // Create New Game state.
   Board _newGame() {
-    return Board.newGame(state.best + state.score, [random([])]);
+    return Board.newGame(state.best + state.score, []);
   }
 
+// generateNextNumber(){
+//   state.random.shuffle();
+//    state.random.fillRange(0,1,state.nextSelected);
+//   ref.watch(boardManager.notifier).nextSelected= state.random[1];
+// }
   // Start New Game
   void newGame() {
     state = _newGame();
@@ -147,8 +152,136 @@ class BoardManager extends StateNotifier<Board> {
     return Tile(const Uuid().v4(), 2, i);
   }
 
+  Tile random2(List<int> indexes, int iiii, int nextNumber) {
+    var i = 0;
+    do {
+      i = iiii;
+    } while (indexes.contains(i));
+
+    return Tile(const Uuid().v4(), nextNumber, i);
+  }
+
   //Merge tiles
-  void merge() {
+  void merge(int i, int nextNumber) {
+    List<Tile> tiles = [];
+    var tilesMoved = false;
+    List<int> indexes = [];
+    int score = state.score;
+    for (int i = 0, l = state.tiles.length; i < l; i++) {
+      var tile = state.tiles[i];
+      var value = tile.value, merged = false;
+      if (i + 1 < l) {
+        //sum the number of the two tiles with same index and mark the tile as merged and skip the next iteration.
+        var next = state.tiles[i + 1];
+        if (tile.nextIndex == next.nextIndex ||
+            tile.index == next.nextIndex && tile.nextIndex == null) {
+          value = tile.value + next.value;
+          merged = true;
+          score += tile.value;
+          i += 1;
+        }
+      }
+
+      if (merged || tile.nextIndex != null && tile.index != tile.nextIndex) {
+        tilesMoved = true;
+      }
+
+      tiles.add(tile.copyWith(
+          index: tile.nextIndex ?? tile.index,
+          nextIndex: null,
+          value: value,
+          merged: merged));
+      indexes.add(tiles.last.index);
+    }
+
+    //If tiles got moved then generate a new tile at random position of the available positions on the board.
+    // if (tilesMoved) {
+    if (!indexes.contains(i)) {
+      tiles.add(random2(indexes, i, nextNumber));
+    }
+    // print(indexes);
+    // }
+    state = state.copyWith(score: score, tiles: tiles);
+  }
+
+  void mergeAll(int i, int nextNumber) {
+    List<Tile> tiles = [];
+    bool tilesMoved = false;
+    List<int> indexes = [];
+    int score = state.score;
+    print(state.tiles[2].value == state.tiles[5].value);
+    print(state.tiles[3].value);
+    print(state.tiles[5].value);
+    // if (state.tiles[2].value == state.tiles[1].value) {
+    tiles.add(
+      state.tiles[1].copyWith(
+        index: 9,
+        nextIndex: null,
+        value: 333,
+        merged: true,
+      ),
+    );
+    // tiles.add(
+    //   state.tiles[3].copyWith(
+    //     index: 4,
+    //     nextIndex: null,
+    //     value: 3,
+    //     merged: true,
+    //   ),
+    // );
+    // }
+    // state = state.copyWith(score: score, tiles: tiles);
+  }
+
+  Tile rrrrr(List<int> indexes, int iiii, int nextNumber) {
+    var i = 0;
+    do {
+      i = iiii;
+    } while (indexes.contains(i));
+
+    return Tile(const Uuid().v4(), nextNumber, i);
+  }
+
+  void mergeAgain() {
+    List<Tile> tiles = [];
+    var tilesMoved = false;
+    List<int> indexes = [];
+    var score = state.score;
+    for (int i = 0, l = state.tiles.length; i < l; i++) {
+      var tile = state.tiles[i];
+      var value = tile.value, merged = false;
+      if (i + 1 < l) {
+        //sum the number of the two tiles with same index and mark the tile as merged and skip the next iteration.
+        var next = state.tiles[i + 1];
+        if (tile.nextIndex == next.nextIndex ||
+            tile.index == next.nextIndex && tile.nextIndex == null) {
+          value = tile.value + next.value;
+          merged = true;
+          score += tile.value;
+          i += 1;
+        }
+      }
+
+      if (merged || tile.nextIndex != null && tile.index != tile.nextIndex) {
+        tilesMoved = true;
+      }
+
+      tiles.add(tile.copyWith(
+          index: tile.nextIndex ?? tile.index,
+          nextIndex: null,
+          value: value,
+          merged: merged));
+      indexes.add(tiles.last.index);
+    }
+
+    //If tiles got moved then generate a new tile at random position of the available positions on the board.
+    // if (tilesMoved) {
+    // tiles.add(random2(indexes, i));
+    // }
+    state = state.copyWith(score: score, tiles: tiles);
+  }
+
+  void merge2() {
     List<Tile> tiles = [];
     var tilesMoved = false;
     List<int> indexes = [];
@@ -184,9 +317,9 @@ class BoardManager extends StateNotifier<Board> {
     }
 
     //If tiles got moved then generate a new tile at random position of the available positions on the board.
-    if (tilesMoved) {
-      tiles.add(random(indexes));
-    }
+    // if (tilesMoved) {
+    // tiles.add(random2(indexes, i));
+    // }
     state = state.copyWith(score: score, tiles: tiles);
   }
 

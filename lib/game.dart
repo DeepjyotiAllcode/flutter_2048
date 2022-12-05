@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_2048/service/provider/game_state.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_swipe_detector/flutter_swipe_detector.dart';
 
@@ -20,13 +21,16 @@ class _GameState extends ConsumerState<Game>
     with TickerProviderStateMixin, WidgetsBindingObserver {
   //The contoller used to move the the tiles
   late final AnimationController _moveController = AnimationController(
-    duration: const Duration(milliseconds: 100),
+    duration: const Duration(milliseconds: 200),
     vsync: this,
   )..addStatusListener((status) {
       //When the movement finishes merge the tiles and start the scale animation which gives the pop effect.
       if (status == AnimationStatus.completed) {
-        ref.read(boardManager.notifier).merge();
+        ref.read(boardManager.notifier).mergeAgain();
         _scaleController.forward(from: 0.0);
+        // if (ref.read(boardManager.notifier).move(SwipeDirection.up)) {
+        //   _moveController.forward(from: 0.0);
+        // }
       }
     });
 
@@ -35,7 +39,6 @@ class _GameState extends ConsumerState<Game>
     parent: _moveController,
     curve: Curves.easeInOut,
   );
-
   //The contoller used to show a popup effect when the tiles get merged
   late final AnimationController _scaleController = AnimationController(
     duration: const Duration(milliseconds: 200),
@@ -46,6 +49,7 @@ class _GameState extends ConsumerState<Game>
         if (ref.read(boardManager.notifier).endRound()) {
           _moveController.forward(from: 0.0);
         }
+        // ref.read(todosProvider).isRun = true; required
       }
     });
 
@@ -64,19 +68,23 @@ class _GameState extends ConsumerState<Game>
 
   @override
   Widget build(BuildContext context) {
+    final board = ref.watch(boardManager);
+    TodosNotifier todos = ref.read(todosProvider);
     return RawKeyboardListener(
       autofocus: true,
       focusNode: FocusNode(),
       onKey: (RawKeyEvent event) {
         //Move the tile with the arrows on the keyboard on Desktop
-        if (ref.read(boardManager.notifier).onKey(event)) {
-          _moveController.forward(from: 0.0);
-        }
+        // if (ref.read(boardManager.notifier).onKey(event)) {
+        //   _moveController.forward(from: 0.0);
+        // }
       },
       child: SwipeDetector(
         onSwipe: (direction, offset) {
-          if (ref.read(boardManager.notifier).move(direction)) {
-            _moveController.forward(from: 0.0);
+          if (direction != SwipeDirection.down) {
+            if (ref.read(boardManager.notifier).move(direction)) {
+              _moveController.forward(from: 0.0);
+            }
           }
         },
         child: Scaffold(
@@ -125,22 +133,46 @@ class _GameState extends ConsumerState<Game>
                               },
                             )
                           ],
-                        )
+                        ),
                       ],
                     )
                   ],
                 ),
               ),
-              const SizedBox(
-                height: 32.0,
-              ),
+              const SizedBox(height: 32.0),
               Stack(
                 children: [
                   const EmptyBoardWidget(),
                   TileBoardWidget(
-                      moveAnimation: _moveAnimation,
-                      scaleAnimation: _scaleAnimation)
+                    moveAnimation: _moveAnimation,
+                    scaleAnimation: _scaleAnimation,
+                  ),
+                  if (!board.over) EmptyBoardTransparent(_moveController),
                 ],
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: todos.nextList
+                    .map((e) => Padding(
+                          padding: const EdgeInsets.all(4.0),
+                          child: Container(
+                            width: 60,
+                            height: 60,
+                            decoration: BoxDecoration(
+                              color: Colors.green,
+                              borderRadius: BorderRadius.circular(6.0),
+                            ),
+                            child: Center(
+                                child: Text(
+                              e.toString(),
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700),
+                            )),
+                          ),
+                        ))
+                    .toList(),
               )
             ],
           ),
